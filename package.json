@@ -1,0 +1,21 @@
+{
+  "name": "thedayfinder",
+  "description": "An easy web app to find an event day collaboratively",
+  "author": "Ben Nortier <ben@bjnortier.com>",
+  "engine": "node >= 0.10.0",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "devDependencies": {
+    "chai": "~1.9.0",
+    "mocha": "~1.17.1",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt": "~0.4.2",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-simple-mocha": "~0.4.0"
+  },
+  "dependencies": {
+    "express": "~3.4.8"
+  }
+}
