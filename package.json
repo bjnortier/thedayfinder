@@ -16,6 +16,8 @@
     "grunt-simple-mocha": "~0.4.0"
   },
   "dependencies": {
-    "express": "~3.4.8"
+    "express": "~3.4.8",
+    "nano": "~5.7.1",
+    "hbs": "~2.5.0"
   }
 }
