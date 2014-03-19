@@ -3,6 +3,7 @@ var calendar = new (require('calendar')).Calendar();
 var Handlebars = require('handlebars');
 var Backbone = require('backbone');
 
+var eventId = $('#data').data('event-id');
 
 var NewParticipantView = Backbone.View.extend({
 
@@ -70,26 +71,34 @@ var ExistingParticipantView = Backbone.View.extend({
 
 var ParticipantsModel = Backbone.Model.extend({
   
-  initialize: function() {
+  initialize: function(participants) {
+
     var newParticipantView = new NewParticipantView({model: this});
     this.views = [
       newParticipantView,
     ];
+    this.views = this.views.concat(participants.map(function(name) {
+      new ExistingParticipantView({model: this, name: name});
+    }), this);
+
+    // Responsd to new participant added
     var that = this;
     newParticipantView.on('newParticipant', function(name) {
-      that.views.push(new ExistingParticipantView({model: this, name: name, selected: true}));
+      $.post('/event/' + eventId + '/participant', {name: name}, function(result) {
+        console.log('>>>', result);
+        that.views.push(new ExistingParticipantView({model: this, name: name, selected: true}));
+      });
     });
   },
 
 });
 
 
-var id = $('#data').data('event-id');
-$.get('/data/' + id, function(data) {
+$.get('/event/' + eventId, function(data) {
   $('#name').text(data.name);
   $('#description').text(data.description);
 
-  new ParticipantsModel();
+  new ParticipantsModel(data.participants);
 
   var created = new Date(data.created);
   var year = created.getFullYear();
@@ -109,7 +118,6 @@ $.get('/data/' + id, function(data) {
        {{/each}} \
        </table>';
   var template = Handlebars.compile(source);
-
 
   for (var i = 0; i < data.months; ++i) {
     // Filter out zeroes
