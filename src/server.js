@@ -35,6 +35,18 @@ nano.db.create('thedayfinder', function(err) {
       }
     });
 
+    db.insert({
+      'views': {
+        'byEvent': {
+          'map': 'function(doc) { if (doc.type === "choose") { emit(doc.eventId, doc); } }'
+        }
+      }
+    }, '_design/chosen', function (err) {
+      if (err && (err.status_code !== 409)) {
+        console.error(err);
+      }
+    });
+
     // Get the root - create a new event
     app.get(/^\/$/, function(req, res) {
       var doc = {
@@ -71,7 +83,10 @@ nano.db.create('thedayfinder', function(err) {
           db.get(id, cb);
         },
         function(cb) {
-          db.view('participants', 'byEvent', cb);
+          db.view('participants', 'byEvent', { keys: [id] }, cb);
+        },
+        function(cb) {
+          db.view('chosen', 'byEvent', { keys: [id] }, cb);
         },
       ], function(err, results) {
         if (err) {
@@ -82,11 +97,19 @@ nano.db.create('thedayfinder', function(err) {
           }
         } else {
           var doc = results[0][0];
-          var view = results[1][0];
+          var participantsView = results[1][0];
+          var chosenView = results[2][0];
           console.log('1>>>', doc);
-          console.log('2>>>', view);
-          var participants = view.rows.map(function(row) {
+          var participants = participantsView.rows.map(function(row) {
             return row.value;
+          });
+          var chosen = chosenView.rows.map(function(row) {
+            return {
+              name: row.value.name,
+              month: row.value.month,
+              day: row.value.day,
+              chosen: row.value.chosen,
+            };
           });
 
           res.json({
@@ -96,6 +119,7 @@ nano.db.create('thedayfinder', function(err) {
             created: doc.created,
             months: doc.months,
             participants: participants,
+            chosen: chosen,
           });
         }
       });
@@ -121,6 +145,31 @@ nano.db.create('thedayfinder', function(err) {
       } else {
         res.send(404);
       }
+    });
+
+    app.post(/^\/event\/([0-9a-f]{32})\/choose\/?$/, function(req, res) {
+
+      var name = req.body.name;
+      var month = parseInt(req.body.month, 10);
+      var day = parseInt(req.body.day, 10);
+      var chosen = req.body.chosen === 'true';
+
+      var doc = {
+        eventId: req.params[0],
+        type: 'choose',
+        name: name,
+        month: month,
+        day: day,
+        chosen: chosen,
+      };
+      db.insert(doc, function(err) {
+        if (err) {
+          res.send(500);
+        } else {
+          res.send(201);
+        }
+      });
+
     });
 
     server.listen(port);

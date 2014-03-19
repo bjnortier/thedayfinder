@@ -4591,7 +4591,6 @@ var ParticipantsModel = Backbone.Model.extend({
     });
 
     // Respond to new participant added
-
     newParticipantView.on('newParticipant', function(name) {
 
       var existingView = that.participantViews.filter(function(view) {
@@ -4619,7 +4618,15 @@ var MonthView = Backbone.View.extend({
 
   initialize: function(options) {
     this.chosenDays = {};
+    for (var monthDay in options.chosenByDate) {
+      for (var name in options.chosenByDate[monthDay]) {
+        if (options.chosenByDate[monthDay][name] > 0) {
+          this.chosenDays[monthDay + '_' + name] = true;
+        }
+      }
+    }
     this.view = options;
+    console.log('>>>', this.view);
     this.render();
     $('#months').append(this.$el);
   },
@@ -4632,7 +4639,14 @@ var MonthView = Backbone.View.extend({
        {{#each monthDays}} \
          <tr class="week"> \
          {{#each this}} \
-           {{#this}}<td class="day" data-day="{{.}}"><div class="label">{{.}}</div><div class="chosen"></div></td>{{/this}} \
+           {{#this}} \
+            <td class="day" data-day="{{day}}"> \
+              <div class="label">{{day}}</div> \
+              <div class="chosen"> \
+              {{#each chosen}} \
+                <div class="participant" data-participant="{{.}}">{{.}}</div> \
+              {{/each}} \
+              </div></td>{{/this}} \
            {{^this}}<td></td>{{/this}} \
          {{/each}} \
          </tr> \
@@ -4651,16 +4665,27 @@ var MonthView = Backbone.View.extend({
     var day = elem.data('day');
     var month = elem.parents('.month').data('month');
     var participant = this.model.activeParticipant;
+    var params;
     if (participant) {
-      var key = participant + '_' + month + '_' + day;
+      var key = month + '_' + day + '_' + participant;
       this.chosenDays[key] = !this.chosenDays[key];
+
       if (this.chosenDays[key]) {
-        elem.find('.chosen').append($('<div class="participant" data-participant="' + participant + '">' + participant + '</div>'));
+        
+        params = {name: participant, month: month, day: day, chosen: true};
+        $.post('/event/' + eventId + '/choose', params, function() {
+          elem.find('.chosen').append($('<div class="participant" data-participant="' + participant + '">' + participant + '</div>'));
+        });
       } else {
         var elementsToRemove = elem.find('.chosen .participant').toArray().filter(function(maybeRemove) {
           return '' + $(maybeRemove).data('participant') === participant;
         });
-        elementsToRemove.forEach(function(elem) { $(elem).remove(); });
+        if (elementsToRemove.length) {
+          params = {name: participant, month: month, day: day, chosen: false};
+          $.post('/event/' + eventId + '/choose', params, function() {
+            elementsToRemove.forEach(function(elem) { $(elem).remove(); });
+          });
+        }
       }
     }
   },
@@ -4678,12 +4703,36 @@ var DaysModel = Backbone.Model.extend({
     var month = created.getMonth();
     var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'November', 'December'];
 
+    var chosenByDate = data.chosen.reduce(function(acc, mutation) {
+      var key = mutation.month + '_' + mutation.day;
+      acc[key] = acc[key] || {};
+      if (mutation.chosen) {
+        acc[key][mutation.name] = (acc[key][mutation.name] || 0) + 1;
+      } else {
+        acc[key][mutation.name] = (acc[key][mutation.name] || 0) - 1;
+      }
+      return acc;
+    }, {});
+    console.log(chosenByDate);
+
     for (var i = 0; i < data.months; ++i) {
       // Filter out zeroes
       var monthDays = calendar.monthDays(year, month).reduce(function(acc, week) {
         var filteredWeek = week.map(function(day) {
           if (day !== 0) {
-            return day;
+            var chosen = [];
+            if (chosenByDate[month + '_' + day]) {
+              var objs = chosenByDate[month + '_' + day];
+              for (var key in objs) {
+                if (objs[key] > 0) {
+                  chosen.push(key);
+                }
+              }
+            }
+            return {
+              day: day,
+              chosen: chosen,
+            };
           } else {
             return undefined;
           }
@@ -4696,7 +4745,8 @@ var DaysModel = Backbone.Model.extend({
         model: this,
         month: month,
         name: monthNames[month],
-        monthDays: monthDays
+        monthDays: monthDays,
+        chosenByDate: chosenByDate,
       });
     
       ++month;
