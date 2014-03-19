@@ -6,6 +6,17 @@
     <script src="/public/jquery-2.1.0.min.js"></script>
     <script src="/public/lodash.min.js"></script>
     <script src="/public/backbone-min.js"></script>
+    <style>
+    .month .day {
+      cursor: pointer;
+    }
+    #months.disabled {
+      color: gray;
+    }
+    #months.disabled .month .day {
+      cursor: inherit;
+    }
+    </style>
   </head>
   <body>
     <div id="data" data-event-id="{{id}}"></div>
@@ -17,7 +28,7 @@
     <div id="participants">
       <div id="new-participant">I'm new:</div>
     </div>
-    <div id="months">
+    <div id="months" class="disabled">
     </div>
     <script src="/public/event.js"></script>
   </body>
