@@ -21,6 +21,7 @@
     "nano": "~5.7.1",
     "hbs": "~2.5.0",
     "handlebars": "~2.0.0-alpha.2",
-    "calendar": "~0.1.0"
+    "calendar": "~0.1.0",
+    "underscore": "~1.6.0"
   }
 }

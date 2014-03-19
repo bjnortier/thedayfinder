@@ -45,10 +45,14 @@ module.exports = function(grunt) {
               path: 'public/jquery-2.1.0.min.js',
               exports: '$'
             },
+            backbone: {
+              path: 'public/backbone-min.js',
+              exports: 'Backbone'
+            }
           },
-          external: ['jquery']
+          external: ['jquery', 'backbone']
         }
-      }
+      },
     },
 
     watch: {

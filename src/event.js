@@ -1,11 +1,95 @@
 var $ = require('jquery');
 var calendar = new (require('calendar')).Calendar();
 var Handlebars = require('handlebars');
+var Backbone = require('backbone');
+
+
+var NewParticipantView = Backbone.View.extend({
+
+  initialize: function() {
+    this.render();
+    this.$el.appendTo($('#new-participant'));
+    this.input = this.$el.find('input[type="text"]');
+  },
+
+  render: function() {
+    this.$el.html(
+      '<input type="text"/> \
+       <input type="button" value="ok" class="ok"/> \
+       <input type="button" value="cancel" class="cancel"/>');
+  },
+
+  events: {
+    'click .ok' : 'ok',
+    'click .cancel' : 'cancel',
+    'keyup': 'keyup',
+  },
+
+  ok: function() {
+    var name = this.input.val().trim();
+    if (name.length) {
+      this.trigger('newParticipant', name);
+      this.input.val('');
+    }
+  },
+
+  cancel: function() {
+    this.input.val('');
+  },
+
+  keyup: function(event) {
+    if (event.which === 13) {
+      this.ok();
+    } else if (event.which === 27) {
+      this.cancel();
+    }
+  },
+
+});
+
+var ExistingParticipantView = Backbone.View.extend({
+
+  initialize: function(options) {
+    this.name = options.name;
+    this.render();
+    this.$el.appendTo($('#participants'));
+    this.input = this.$el.find('input');
+    if (options.selected) {
+      this.input.prop('checked', true);
+      this.input.focus();
+    }
+  },
+
+  render: function() {
+    this.$el.html(
+      '<input type="radio" name="participants/><span class="name">' + this.name + '</span>');
+  },
+
+});
+
+
+var ParticipantsModel = Backbone.Model.extend({
+  
+  initialize: function() {
+    var newParticipantView = new NewParticipantView({model: this});
+    this.views = [
+      newParticipantView,
+    ];
+    var that = this;
+    newParticipantView.on('newParticipant', function(name) {
+      that.views.push(new ExistingParticipantView({model: this, name: name, selected: true}));
+    });
+  },
+
+});
+
 
 var id = $('#data').data('event-id');
 $.get('/data/' + id, function(data) {
   $('#name').text(data.name);
   $('#description').text(data.description);
+
+  new ParticipantsModel();
 
   var created = new Date(data.created);
   var year = created.getFullYear();

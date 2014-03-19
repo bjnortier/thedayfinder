@@ -3,6 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no">
+    <script src="/public/jquery-2.1.0.min.js"></script>
+    <script src="/public/lodash.min.js"></script>
+    <script src="/public/backbone-min.js"></script>
   </head>
   <body>
     <div id="data" data-event-id="{{id}}"></div>
@@ -10,6 +13,9 @@
     <div>
       <h2 id="name" contenteditable="true"></h2>
       <p id="description" contenteditable="true"></p>
+    </div>
+    <div id="participants">
+      <div id="new-participant">I'm new:</div>
     </div>
     <div id="months">
     </div>
