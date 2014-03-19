@@ -6,7 +6,6 @@ var nano = require('nano')('http://localhost:5984');
 var port = process.env.PORT || 8000;
 var app = express();
 var server = http.createServer(app);
-var calendar = new (require('calendar')).Calendar();
 
 app.set('views', path.join(__dirname, '..', 'templates'));
 app.set('view engine', 'hbs');
@@ -15,6 +14,8 @@ nano.db.create('thedayfinder', function(err) {
   if (err && (err.status_code !== 412)) {
     console.error(err);
   } else {
+
+    app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
     var db = nano.db.use('thedayfinder');
 
@@ -41,6 +42,13 @@ nano.db.create('thedayfinder', function(err) {
     // Get the event
     app.get(/^\/([0-9a-f]{32})$/, function(req, res) {
       var id = req.params[0];
+      res.render('event', {
+        id: id,
+      });
+    });
+
+    app.get(/^\/data\/([0-9a-f]{32})$/, function(req, res) {
+      var id = req.params[0];
       db.get(id, function(err, doc) {
         if (err) {
           if (err.status_code === 404) {
@@ -49,43 +57,12 @@ nano.db.create('thedayfinder', function(err) {
             res.send(500);
           }
         } else {
-          var created = new Date(doc.created);
-          var year = created.getFullYear();
-          var month = created.getMonth();
-          var calendarMonths = [];
-          var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'November', 'December'];
-
-          for (var i = 0; i < doc.months; ++i) {
-            // Filter out zeroes
-            var monthDays = calendar.monthDays(year, month).reduce(function(acc, week) {
-              var filteredWeek = week.map(function(day) {
-                if (day !== 0) {
-                  return day;
-                } else {
-                  return undefined;
-                }
-              });
-              acc.push(filteredWeek);
-              return acc;
-            }, []);
-
-            calendarMonths.push({
-              name: monthNames[month],
-              monthDays: monthDays,
-            });
-
-            ++month;
-            if (month === 12) {
-              month = 0;
-              ++year;
-            }
-          }
-          console.log('>>>', calendarMonths);
-          res.render('event', {
-            id: doc.id,
+          res.json({
+            id: doc._id,
             name: doc.name,
             description: doc.description,
-            calendarMonths: calendarMonths,
+            created: doc.created,
+            months: doc.months,
           });
         }
       });

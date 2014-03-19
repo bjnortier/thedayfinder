@@ -34,6 +34,23 @@ module.exports = function(grunt) {
       },
     },
 
+    browserify: {
+      event: {
+        files: {
+          'public/event.js': ['src/event.js'],
+        },
+        options: {
+          shim: {
+            jquery: {
+              path: 'public/jquery-2.1.0.min.js',
+              exports: '$'
+            },
+          },
+          external: ['jquery']
+        }
+      }
+    },
+
     watch: {
       gruntfile: {
         files: '<%= jshint.gruntfile.src %>',
@@ -41,7 +58,7 @@ module.exports = function(grunt) {
       },
       src: {
         files: ['<%= jshint.src.src %>'],
-        tasks: ['jshint:src','unit'],
+        tasks: ['jshint:src','unit','browserify'],
       },
       unit: {
         files: ['<%= jshint.unit.src %>'],
@@ -54,6 +71,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-simple-mocha');
+  grunt.loadNpmTasks('grunt-browserify');
 
   grunt.registerTask('unit', ['simplemocha:unit']);
   grunt.registerTask('test', ['jshint', 'unit']);

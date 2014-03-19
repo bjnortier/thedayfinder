@@ -5,25 +5,14 @@
     <meta name="viewport" content="width=device-width, user-scalable=no">
   </head>
   <body>
-    {{id}}
+    <div id="data" data-event-id="{{id}}"></div>
+    <div id="error"></div>
     <div>
-      <h2 id="name" contenteditable="true">{{name}}</h2>
-      <p id="description" contenteditable="true">{{description}}</p>
+      <h2 id="name" contenteditable="true"></h2>
+      <p id="description" contenteditable="true"></p>
     </div>
     <div id="months">
-      {{#each calendarMonths}}  
-        {{name}}
-        <table class="month">
-        <th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th>
-        {{#each monthDays}}
-          <tr class="week">
-          {{#each this}}
-            <td>{{#this}}{{.}}{{/this}}</td>
-          {{/each}}
-          </tr>
-        {{/each}}
-        </table>
-      {{/each}}
     </div>
+    <script src="/public/event.js"></script>
   </body>
 </html>
