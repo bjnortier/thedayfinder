@@ -2,8 +2,28 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
   </head>
   <body>
     {{id}}
+    <div>
+      <h2 id="name" contenteditable="true">{{name}}</h2>
+      <p id="description" contenteditable="true">{{description}}</p>
+    </div>
+    <div id="months">
+      {{#each calendarMonths}}  
+        {{name}}
+        <table class="month">
+        <th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th>
+        {{#each monthDays}}
+          <tr class="week">
+          {{#each this}}
+            <td>{{#this}}{{.}}{{/this}}</td>
+          {{/each}}
+          </tr>
+        {{/each}}
+        </table>
+      {{/each}}
+    </div>
   </body>
 </html>

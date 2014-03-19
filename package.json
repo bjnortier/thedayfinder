@@ -5,7 +5,7 @@
   "engine": "node >= 0.10.0",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon -e js,hbs src/app.js"
   },
   "devDependencies": {
     "chai": "~1.9.0",
