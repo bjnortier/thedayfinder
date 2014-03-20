@@ -56,7 +56,6 @@ nano.db.create('thedayfinder', function(err) {
       };
 
       db.insert(doc, function(err, result) {
-        console.log(result);
         if (err) {
           res.send(500);
         } else {
