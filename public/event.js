@@ -4866,7 +4866,7 @@ var DaysModel = Backbone.Model.extend({
       $.post('/event/' + eventId + '/addYear', {}, function() {
 
         new MonthView({
-          model: this,
+          model: that,
           month: month,
           name: monthNames[month],
           monthDays: getMonthDays(year, month),
