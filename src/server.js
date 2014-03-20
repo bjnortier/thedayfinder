@@ -50,8 +50,8 @@ nano.db.create('thedayfinder', function(err) {
       var doc = {
         type: 'event',
         created: new Date(new Date().getTime() - 24*3600*1000),
-        title: 'The Event',
-        description: 'The event description',
+        title: 'The Event Title (click/tap to edit)',
+        description: 'The event description (click/tap to edit)',
         months: 2,
       };
 

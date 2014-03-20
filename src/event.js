@@ -73,14 +73,14 @@ var NewParticipantView = Backbone.View.extend({
     this.render();
     this.$el.appendTo($('#new-participant'));
     this.input = this.$el.find('input[type="text"]');
-    this.$el.find('input[type="button"]').hide();
+    this.$el.find('.ok, .cancel').hide();
   },
 
   render: function() {
     this.$el.html(
       '<input type="text" class="text"/> \
-       <input type="button" value="ok" class="ok"/> \
-       <input type="button" value="cancel" class="cancel"/>');
+       <i class="ok fa fa-check-circle-o"></i> \
+       <i class="cancel fa fa-times-circle-o"></i>');
   },
 
   events: {
@@ -88,10 +88,15 @@ var NewParticipantView = Backbone.View.extend({
     'click .cancel' : 'cancel',
     'keyup': 'keyup',
     'focus .text': 'focus',
+    'blur .text': 'blur',
   },
 
   focus: function() {
-    this.$el.find('input[type="button"]').show();
+    this.$el.find('.ok, .cancel').show();
+  },
+
+  blur: function() {
+    // this.$el.find('.ok, .cancel').hide();
   },
 
   ok: function() {
@@ -99,15 +104,15 @@ var NewParticipantView = Backbone.View.extend({
     if (name.length) {
       this.trigger('newParticipant', name);
       this.input.val('');
-      this.$el.find('input[type="button"]').focus();
-      this.$el.find('input[type="button"]').hide();
     }
+    this.input.blur();
+    this.$el.find('.ok, .cancel').hide();
   },
 
   cancel: function() {
     this.input.val('');
-    this.$el.find('input[type="button"]').focus();
-    this.$el.find('input[type="button"]').hide();
+    this.input.blur();
+    this.$el.find('.ok, .cancel').hide();
   },
 
   keyup: function(event) {
@@ -127,7 +132,7 @@ var ExistingParticipantView = Backbone.View.extend({
   initialize: function(options) {
     this.name = options.name;
     this.render();
-    this.$el.appendTo($('#participants'));
+    this.$el.appendTo($('#existing-participants'));
     this.input = this.$el.find('input');
     if (options.selected) {
       this.input.prop('checked', true);
@@ -362,7 +367,7 @@ var DaysModel = Backbone.Model.extend({
       that.activeParticipant = name;
     });
 
-    var addMonthButton = $('<input type="button" value="+"/>');
+    var addMonthButton = $('<i class="fa fa-plus-circle"></i>');
     $('#add-month').append(addMonthButton);
     addMonthButton.click(function() {
 
@@ -393,8 +398,12 @@ $('body').append($(' \
   <div id="title-and-description"> \
   </div> \
   <div id="participants"> \
-    <div id="new-participant">I\'m new:</div> \
+    <div class="instructions">I\'m new:</div> \
+    <div id="new-participant"></div> \
+    <div class="instructions">I\'ve been here before:</div> \
+    <div id="existing-participants"></div> \
   </div> \
+  <div class="instructions">Click on the days you are available:</div> \
   <div id="months" class="disabled"> \
   </div> \
   <div id="add-month"></div>'));

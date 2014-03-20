@@ -79,6 +79,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', ['simplemocha:unit']);
   grunt.registerTask('test', ['jshint', 'unit']);
-  grunt.registerTask('default', ['test']);
+  grunt.registerTask('default', ['test', 'browserify']);
 
 };

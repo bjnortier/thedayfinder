@@ -1,6 +1,4 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
 /*!
  * calendar: a port of the calendar module from Python
  * Copyright(c) 2011 Luciano Ramalho <luciano@ramalho.org>
@@ -79,6 +77,8 @@ for (var i=0; i<months.length; i++)
     Calendar[months[i]] = i;
 
 exports.Calendar = Calendar;
+
+},{}],2:[function(require,module,exports){
 
 },{}],3:[function(require,module,exports){
 "use strict";
@@ -3117,7 +3117,7 @@ if (typeof require !== 'undefined' && require.extensions) {
   require.extensions[".hbs"] = extension;
 }
 
-},{"../dist/cjs/handlebars":3,"../dist/cjs/handlebars/compiler/printer":11,"../dist/cjs/handlebars/compiler/visitor":12,"fs":1}],18:[function(require,module,exports){
+},{"../dist/cjs/handlebars":3,"../dist/cjs/handlebars/compiler/printer":11,"../dist/cjs/handlebars/compiler/visitor":12,"fs":2}],18:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -4565,14 +4565,14 @@ var NewParticipantView = Backbone.View.extend({
     this.render();
     this.$el.appendTo($('#new-participant'));
     this.input = this.$el.find('input[type="text"]');
-    this.$el.find('input[type="button"]').hide();
+    this.$el.find('.ok, .cancel').hide();
   },
 
   render: function() {
     this.$el.html(
       '<input type="text" class="text"/> \
-       <input type="button" value="ok" class="ok"/> \
-       <input type="button" value="cancel" class="cancel"/>');
+       <i class="ok fa fa-check-circle-o"></i> \
+       <i class="cancel fa fa-times-circle-o"></i>');
   },
 
   events: {
@@ -4580,10 +4580,15 @@ var NewParticipantView = Backbone.View.extend({
     'click .cancel' : 'cancel',
     'keyup': 'keyup',
     'focus .text': 'focus',
+    'blur .text': 'blur',
   },
 
   focus: function() {
-    this.$el.find('input[type="button"]').show();
+    this.$el.find('.ok, .cancel').show();
+  },
+
+  blur: function() {
+    // this.$el.find('.ok, .cancel').hide();
   },
 
   ok: function() {
@@ -4591,15 +4596,15 @@ var NewParticipantView = Backbone.View.extend({
     if (name.length) {
       this.trigger('newParticipant', name);
       this.input.val('');
-      this.$el.find('input[type="button"]').focus();
-      this.$el.find('input[type="button"]').hide();
     }
+    this.input.blur();
+    this.$el.find('.ok, .cancel').hide();
   },
 
   cancel: function() {
     this.input.val('');
-    this.$el.find('input[type="button"]').focus();
-    this.$el.find('input[type="button"]').hide();
+    this.input.blur();
+    this.$el.find('.ok, .cancel').hide();
   },
 
   keyup: function(event) {
@@ -4619,7 +4624,7 @@ var ExistingParticipantView = Backbone.View.extend({
   initialize: function(options) {
     this.name = options.name;
     this.render();
-    this.$el.appendTo($('#participants'));
+    this.$el.appendTo($('#existing-participants'));
     this.input = this.$el.find('input');
     if (options.selected) {
       this.input.prop('checked', true);
@@ -4854,7 +4859,7 @@ var DaysModel = Backbone.Model.extend({
       that.activeParticipant = name;
     });
 
-    var addMonthButton = $('<input type="button" value="+"/>');
+    var addMonthButton = $('<i class="fa fa-plus-circle"></i>');
     $('#add-month').append(addMonthButton);
     addMonthButton.click(function() {
 
@@ -4885,8 +4890,12 @@ $('body').append($(' \
   <div id="title-and-description"> \
   </div> \
   <div id="participants"> \
-    <div id="new-participant">I\'m new:</div> \
+    <div class="instructions">I\'m new:</div> \
+    <div id="new-participant"></div> \
+    <div class="instructions">I\'ve been here before:</div> \
+    <div id="existing-participants"></div> \
   </div> \
+  <div class="instructions">Click on the days you are available:</div> \
   <div id="months" class="disabled"> \
   </div> \
   <div id="add-month"></div>'));
@@ -4905,7 +4914,7 @@ $.get('/event/' + eventId, function(data) {
     $('#error').text('oops [' + err.status + ']');
   }
 });
-},{"./shortenname":24,"calendar":2,"handlebars":17}],24:[function(require,module,exports){
+},{"./shortenname":24,"calendar":1,"handlebars":17}],24:[function(require,module,exports){
 module.exports = function(name) {
 
   var trimmed = name && name.trim();

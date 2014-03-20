@@ -4,7 +4,7 @@
   "author": "Ben Nortier <ben@bjnortier.com>",
   "engine": "node >= 0.10.0",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node src/server.js",
     "dev": "nodemon -e js,hbs src/server.js"
   },
   "devDependencies": {

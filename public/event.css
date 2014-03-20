@@ -7,6 +7,14 @@ h2 {
   color: rgb(79, 14, 82);
 }
 
+.ok, .cancel {
+  font-size: 20px;
+}
+
+.instructions {
+  margin-top: 1em;
+}
+
 .month .day {
   cursor: pointer;
 }
@@ -19,8 +27,17 @@ h2 {
   margin-top: 20px;
 }
 
-.calendar-month {
-  margin-left: 8em;
+.calendar-month, #add-month {
+  margin-left: 130px;
+}
+
+#add-month {
+  margin-top: 20px;
+  font-size: 30px;
+}
+
+#add-month i {
+  cursor: pointer;
 }
 
 .month {
@@ -41,7 +58,7 @@ h2 {
 }
 
 .day.today {
-  background-color: rgb(255, 113, 181);
+  background-color: rgb(118, 227, 236);
 }
 
 .day .count {
@@ -54,3 +71,4 @@ h2 {
 .day .chosen {
   display: inline-block;
 }
+
