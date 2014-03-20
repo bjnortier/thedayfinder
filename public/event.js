@@ -4711,6 +4711,7 @@ var MonthView = Backbone.View.extend({
            {{#this}} \
             <td class="day" data-day="{{day}}"> \
               <div class="label">{{day}}</div> \
+              <div class="count">{{count}}</div> \
               <div class="chosen"> \
               {{#each chosen}} \
                 <div class="participant" data-participant="{{.}}">{{.}}</div> \
@@ -4744,6 +4745,7 @@ var MonthView = Backbone.View.extend({
         params = {name: participant, month: month, day: day, chosen: true};
         $.post('/event/' + eventId + '/choose', params, function() {
           elem.find('.chosen').append($('<div class="participant" data-participant="' + participant + '">' + participant + '</div>'));
+          elem.find('.count').text(elem.find('.chosen').length);
         });
       } else {
         var elementsToRemove = elem.find('.chosen .participant').toArray().filter(function(maybeRemove) {
@@ -4753,6 +4755,13 @@ var MonthView = Backbone.View.extend({
           params = {name: participant, month: month, day: day, chosen: false};
           $.post('/event/' + eventId + '/choose', params, function() {
             elementsToRemove.forEach(function(elem) { $(elem).remove(); });
+
+            var numberChosen = elem.find('.chosen').length;
+            if (numberChosen > 1) {
+              elem.find('.count').text(numberChosen);
+            } else {
+              elem.find('.count').text('');
+            }
           });
         }
       }
@@ -4800,6 +4809,7 @@ var DaysModel = Backbone.Model.extend({
             return {
               day: day,
               chosen: chosen,
+              count: chosen.length || undefined,
             };
           } else {
             return undefined;
