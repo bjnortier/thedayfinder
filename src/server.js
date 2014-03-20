@@ -123,6 +123,82 @@ nano.db.create('thedayfinder', function(err) {
 
     });
 
+
+    app.post(/^\/event\/([0-9a-f]{32})\/title\/?$/, function(req, res) {
+
+      var newTitle = req.body.title;
+      var eventId = req.params[0];
+      if (!newTitle || !newTitle.trim().length) {
+        res.send(404);
+        return;
+      }
+
+      async.waterfall([
+        function(cb) {
+          db.get(eventId, cb);
+        },
+        function(doc, header, cb) {
+          doc.title = newTitle;
+          db.insert(doc, cb);
+        }
+      ], function(err) {
+        if (err) {
+          res.send(500);
+        } else {
+          res.send(200);
+        }
+      });
+
+    });
+
+    app.post(/^\/event\/([0-9a-f]{32})\/addYear\/?$/, function(req, res) {
+
+      var eventId = req.params[0];
+      async.waterfall([
+        function(cb) {
+          db.get(eventId, cb);
+        },
+        function(doc, header, cb) {
+          doc.months = doc.months + 1;
+          db.insert(doc, cb);
+        }
+      ], function(err) {
+        if (err) {
+          res.send(500);
+        } else {
+          res.send(200);
+        }
+      });
+
+    });
+
+    app.post(/^\/event\/([0-9a-f]{32})\/description\/?$/, function(req, res) {
+
+      var newDescription = req.body.description;
+      var eventId = req.params[0];
+      if (!newDescription || !newDescription.trim().length) {
+        res.send(404);
+        return;
+      }
+
+      async.waterfall([
+        function(cb) {
+          db.get(eventId, cb);
+        },
+        function(doc, header, cb) {
+          doc.description = newDescription;
+          db.insert(doc, cb);
+        }
+      ], function(err) {
+        if (err) {
+          res.send(500);
+        } else {
+          res.send(200);
+        }
+      });
+
+    });
+
     app.post(/^\/event\/([0-9a-f]{32})\/participant\/?$/, function(req, res) {
 
       var name = req.body.name && req.body.name.trim();
@@ -169,59 +245,6 @@ nano.db.create('thedayfinder', function(err) {
 
     });
 
-    app.post(/^\/event\/([0-9a-f]{32})\/title\/?$/, function(req, res) {
-
-      var newTitle = req.body.title;
-      var eventId = req.params[0];
-      if (!newTitle || !newTitle.trim().length) {
-        res.send(404);
-        return;
-      }
-
-      async.waterfall([
-        function(cb) {
-          db.get(eventId, cb);
-        },
-        function(doc, header, cb) {
-          doc.title = newTitle;
-          db.insert(doc, cb);
-        }
-      ], function(err) {
-        if (err) {
-          res.send(500);
-        } else {
-          res.send(200);
-        }
-      });
-
-    });
-
-    app.post(/^\/event\/([0-9a-f]{32})\/description\/?$/, function(req, res) {
-
-      var newDescription = req.body.description;
-      var eventId = req.params[0];
-      if (!newDescription || !newDescription.trim().length) {
-        res.send(404);
-        return;
-      }
-
-      async.waterfall([
-        function(cb) {
-          db.get(eventId, cb);
-        },
-        function(doc, header, cb) {
-          doc.description = newDescription;
-          db.insert(doc, cb);
-        }
-      ], function(err) {
-        if (err) {
-          res.send(500);
-        } else {
-          res.send(200);
-        }
-      });
-
-    });
 
     server.listen(port);
     console.info('server started on :' + port + '\n');

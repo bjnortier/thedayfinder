@@ -278,7 +278,7 @@ var DaysModel = Backbone.Model.extend({
     var created = new Date(data.created);
     var year = created.getFullYear();
     var month = created.getMonth();
-    var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'November', 'December'];
+    var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     var chosenByDate = data.chosen.reduce(function(acc, mutation) {
       var key = mutation.month + '_' + mutation.day;
@@ -291,9 +291,9 @@ var DaysModel = Backbone.Model.extend({
       return acc;
     }, {});
 
-    for (var i = 0; i < data.months; ++i) {
+    function getMonthDays(month) {
       // Filter out zeroes
-      var monthDays = calendar.monthDays(year, month).reduce(function(acc, week) {
+      return calendar.monthDays(year, month).reduce(function(acc, week) {
         var filteredWeek = week.map(function(day) {
           if (day !== 0) {
             var chosen = [];
@@ -316,12 +316,15 @@ var DaysModel = Backbone.Model.extend({
         acc.push(filteredWeek);
         return acc;
       }, []);
+    }
+
+    for (var i = 0; i < data.months; ++i) {
 
       new MonthView({
         model: this,
         month: month,
         name: monthNames[month],
-        monthDays: monthDays,
+        monthDays: getMonthDays(month),
         chosenByDate: chosenByDate,
       });
     
@@ -338,9 +341,42 @@ var DaysModel = Backbone.Model.extend({
       that.activeParticipant = name;
     });
 
+    var addMonthButton = $('<input type="button" value="+"/>');
+    $('#add-month').append(addMonthButton);
+    addMonthButton.click(function() {
+
+      $.post('/event/' + eventId + '/addYear', {}, function() {
+
+        new MonthView({
+          model: this,
+          month: month,
+          name: monthNames[month],
+          monthDays: getMonthDays(month),
+          chosenByDate: chosenByDate,
+        });
+      
+        ++month;
+        if (month === 12) {
+          month = 0;
+          ++year;
+        }
+      });
+    });
+
   },
 
 });
+
+$('body').append($(' \
+  <div id="error"></div> \
+  <div id="title-and-description"> \
+  </div> \
+  <div id="participants"> \
+    <div id="new-participant">I\'m new:</div> \
+  </div> \
+  <div id="months" class="disabled"> \
+  </div> \
+  <div id="add-month"></div>'));
 
 $.get('/event/' + eventId, function(data) {
 
