@@ -4492,6 +4492,7 @@ return d||(f=$b[b],$b[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$b[b]=f),e}});v
 },{}],23:[function(require,module,exports){
 var $ = require('jquery');
 var calendar = new (require('calendar')).Calendar();
+var shortenName = require('./shortenname');
 var Handlebars = require('handlebars');
 var Backbone = require('backbone');
 
@@ -4590,6 +4591,7 @@ var NewParticipantView = Backbone.View.extend({
     if (name.length) {
       this.trigger('newParticipant', name);
       this.input.val('');
+      this.$el.find('input[type="button"]').focus();
       this.$el.find('input[type="button"]').hide();
     }
   },
@@ -4702,19 +4704,19 @@ var MonthView = Backbone.View.extend({
 
   render: function() {
     var source   =
-      '{{name}} \
+      '<h3 class="calendar-month">{{name}}</h3> \
        <table class="month" data-month="{{month}}"> \
        <th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th> \
        {{#each monthDays}} \
          <tr class="week"> \
          {{#each this}} \
            {{#this}} \
-            <td class="day" data-day="{{day}}"> \
+            <td class="day{{#today}} today{{/today}}" data-day="{{day}}"> \
               <div class="label">{{day}}</div> \
               <div class="count">{{count}}</div> \
               <div class="chosen"> \
               {{#each chosen}} \
-                <div class="participant" data-participant="{{.}}">{{.}}</div> \
+                <div class="participant" data-participant="{{fullName}}">{{shortName}}</div> \
               {{/each}} \
               </div></td>{{/this}} \
            {{^this}}<td></td>{{/this}} \
@@ -4744,8 +4746,13 @@ var MonthView = Backbone.View.extend({
         
         params = {name: participant, month: month, day: day, chosen: true};
         $.post('/event/' + eventId + '/choose', params, function() {
-          elem.find('.chosen').append($('<div class="participant" data-participant="' + participant + '">' + participant + '</div>'));
-          elem.find('.count').text(elem.find('.chosen').length);
+          elem.find('.chosen').append(
+            $('<div class="participant" data-participant="' +
+              participant +
+              '">' +
+              shortenName(participant) +
+              '</div>'));
+          elem.find('.count').text(elem.find('.participant').length);
         });
       } else {
         var elementsToRemove = elem.find('.chosen .participant').toArray().filter(function(maybeRemove) {
@@ -4756,8 +4763,8 @@ var MonthView = Backbone.View.extend({
           $.post('/event/' + eventId + '/choose', params, function() {
             elementsToRemove.forEach(function(elem) { $(elem).remove(); });
 
-            var numberChosen = elem.find('.chosen').length;
-            if (numberChosen > 1) {
+            var numberChosen = elem.find('.participant').length;
+            if (numberChosen > 0) {
               elem.find('.count').text(numberChosen);
             } else {
               elem.find('.count').text('');
@@ -4792,7 +4799,7 @@ var DaysModel = Backbone.Model.extend({
       return acc;
     }, {});
 
-    function getMonthDays(month) {
+    function getMonthDays(year, month) {
       // Filter out zeroes
       return calendar.monthDays(year, month).reduce(function(acc, week) {
         var filteredWeek = week.map(function(day) {
@@ -4806,10 +4813,14 @@ var DaysModel = Backbone.Model.extend({
                 }
               }
             }
+            var now = new Date();
             return {
               day: day,
-              chosen: chosen,
+              chosen: chosen.map(function(fullName) {
+                return {fullName: fullName, shortName: shortenName(fullName)};
+              }),
               count: chosen.length || undefined,
+              today: ((now.getFullYear() === year) && (now.getMonth() === month) && (now.getDate() === day)),
             };
           } else {
             return undefined;
@@ -4826,7 +4837,7 @@ var DaysModel = Backbone.Model.extend({
         model: this,
         month: month,
         name: monthNames[month],
-        monthDays: getMonthDays(month),
+        monthDays: getMonthDays(year, month),
         chosenByDate: chosenByDate,
       });
     
@@ -4853,7 +4864,7 @@ var DaysModel = Backbone.Model.extend({
           model: this,
           month: month,
           name: monthNames[month],
-          monthDays: getMonthDays(month),
+          monthDays: getMonthDays(year, month),
           chosenByDate: chosenByDate,
         });
       
@@ -4894,4 +4905,27 @@ $.get('/event/' + eventId, function(data) {
     $('#error').text('oops [' + err.status + ']');
   }
 });
-},{"calendar":2,"handlebars":17}]},{},[23])
+},{"./shortenname":24,"calendar":2,"handlebars":17}],24:[function(require,module,exports){
+module.exports = function(name) {
+
+  var trimmed = name && name.trim();
+  if (!trimmed || !trimmed.length) {
+    throw new Error('name should be a non-empty string');
+  }
+
+  if (trimmed.length === 1) {
+    return trimmed;
+  }
+
+  var split = trimmed.split(/\s/);
+
+  // Only a single name, like Madonna
+  if (split.length === 1) {
+    return split[0].substr(0,2);
+  }
+
+  // Multiple names - first characters form first & last name
+  return split[0][0] + split[split.length-1][0];
+
+};
+},{}]},{},[23])
