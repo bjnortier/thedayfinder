@@ -1,6 +1,6 @@
 {
   "name": "thedayfinder",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An easy web app to find an event day collaboratively",
   "author": "Ben Nortier <ben@bjnortier.com>",
   "engine": "node >= 0.10.0",

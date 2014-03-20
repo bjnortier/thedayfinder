@@ -2,7 +2,9 @@ var path = require('path');
 var http = require('http');
 var express = require('express');
 var async = require('async');
-var nano = require('nano')('http://localhost:5984');
+
+var couchURL = process.env['CLOUDANT_URL'] || 'http://localhost:5984';
+var nano = require('nano')(couchURL);
 
 var port = process.env.PORT || 8000;
 var app = express();
