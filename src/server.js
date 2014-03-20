@@ -17,8 +17,6 @@ nano.db.create('thedayfinder', function(err) {
     console.error(err);
   } else {
 
-
-
     app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
     var db = nano.db.use('thedayfinder');
@@ -52,7 +50,7 @@ nano.db.create('thedayfinder', function(err) {
       var doc = {
         type: 'event',
         created: new Date(new Date().getTime() - 24*3600*1000),
-        name: 'The Event',
+        title: 'The Event',
         description: 'The event description',
         months: 2,
       };
@@ -99,7 +97,6 @@ nano.db.create('thedayfinder', function(err) {
           var doc = results[0][0];
           var participantsView = results[1][0];
           var chosenView = results[2][0];
-          console.log('1>>>', doc);
           var participants = participantsView.rows.map(function(row) {
             return row.value;
           });
@@ -114,7 +111,7 @@ nano.db.create('thedayfinder', function(err) {
 
           res.json({
             id: doc._id,
-            name: doc.name,
+            title: doc.title,
             description: doc.description,
             created: doc.created,
             months: doc.months,
@@ -167,6 +164,60 @@ nano.db.create('thedayfinder', function(err) {
           res.send(500);
         } else {
           res.send(201);
+        }
+      });
+
+    });
+
+    app.post(/^\/event\/([0-9a-f]{32})\/title\/?$/, function(req, res) {
+
+      var newTitle = req.body.title;
+      var eventId = req.params[0];
+      if (!newTitle || !newTitle.trim().length) {
+        res.send(404);
+        return;
+      }
+
+      async.waterfall([
+        function(cb) {
+          db.get(eventId, cb);
+        },
+        function(doc, header, cb) {
+          doc.title = newTitle;
+          db.insert(doc, cb);
+        }
+      ], function(err) {
+        if (err) {
+          res.send(500);
+        } else {
+          res.send(200);
+        }
+      });
+
+    });
+
+    app.post(/^\/event\/([0-9a-f]{32})\/description\/?$/, function(req, res) {
+
+      var newDescription = req.body.description;
+      var eventId = req.params[0];
+      if (!newDescription || !newDescription.trim().length) {
+        res.send(404);
+        return;
+      }
+
+      async.waterfall([
+        function(cb) {
+          db.get(eventId, cb);
+        },
+        function(doc, header, cb) {
+          doc.description = newDescription;
+          db.insert(doc, cb);
+        }
+      ], function(err) {
+        if (err) {
+          res.send(500);
+        } else {
+          res.send(200);
         }
       });
 

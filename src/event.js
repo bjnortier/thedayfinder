@@ -5,17 +5,79 @@ var Backbone = require('backbone');
 
 var eventId = $('#data').data('event-id');
 
+var EventTitleView = Backbone.View.extend({
+
+  tagName: 'h2',
+
+  attributes: {
+    contenteditable: true,
+  },
+
+  initialize: function(title) {
+    this.title = title;
+    this.$el.text(title);
+    $('#title-and-description').append(this.$el);
+    this.$el.keypress(function(e) { return e.which !== 13; });
+  },
+
+  events: {
+    'blur' : 'change',
+  },
+
+  change: function() {
+    var newTitle = this.$el.text();
+    var that = this;
+    $.post('/event/' + eventId + '/title', {title: newTitle}, function() {
+      that.title = newTitle;
+    }).fail(function() {
+      that.$el.text(that.title);
+    });
+  },
+
+});
+
+var EventDescriptionView = Backbone.View.extend({
+
+  tagName: 'p',
+
+  attributes: {
+    contenteditable: true,
+  },
+
+  initialize: function(description) {
+    this.description = description;
+    this.$el.text(description);
+    $('#title-and-description').append(this.$el);
+  },
+
+  events: {
+    'blur' : 'change',
+  },
+
+  change: function() {
+    var newDescription = this.$el.text();
+    var that = this;
+    $.post('/event/' + eventId + '/description', {description: newDescription}, function() {
+      that.description = newDescription;
+    }).fail(function() {
+      that.$el.text(that.description);
+    });
+  },
+
+});
+
 var NewParticipantView = Backbone.View.extend({
 
   initialize: function() {
     this.render();
     this.$el.appendTo($('#new-participant'));
     this.input = this.$el.find('input[type="text"]');
+    this.$el.find('input[type="button"]').hide();
   },
 
   render: function() {
     this.$el.html(
-      '<input type="text"/> \
+      '<input type="text" class="text"/> \
        <input type="button" value="ok" class="ok"/> \
        <input type="button" value="cancel" class="cancel"/>');
   },
@@ -24,6 +86,11 @@ var NewParticipantView = Backbone.View.extend({
     'click .ok' : 'ok',
     'click .cancel' : 'cancel',
     'keyup': 'keyup',
+    'focus .text': 'focus',
+  },
+
+  focus: function() {
+    this.$el.find('input[type="button"]').show();
   },
 
   ok: function() {
@@ -31,11 +98,14 @@ var NewParticipantView = Backbone.View.extend({
     if (name.length) {
       this.trigger('newParticipant', name);
       this.input.val('');
+      this.$el.find('input[type="button"]').hide();
     }
   },
 
   cancel: function() {
     this.input.val('');
+    this.$el.find('input[type="button"]').focus();
+    this.$el.find('input[type="button"]').hide();
   },
 
   keyup: function(event) {
@@ -134,7 +204,6 @@ var MonthView = Backbone.View.extend({
       }
     }
     this.view = options;
-    console.log('>>>', this.view);
     this.render();
     $('#months').append(this.$el);
   },
@@ -221,7 +290,6 @@ var DaysModel = Backbone.Model.extend({
       }
       return acc;
     }, {});
-    console.log(chosenByDate);
 
     for (var i = 0; i < data.months; ++i) {
       // Filter out zeroes
@@ -275,9 +343,9 @@ var DaysModel = Backbone.Model.extend({
 });
 
 $.get('/event/' + eventId, function(data) {
-  $('#name').text(data.name);
-  $('#description').text(data.description);
 
+  new EventTitleView(data.title);
+  new EventDescriptionView(data.description);
   var participantsModel = new ParticipantsModel(data.participants);
   new DaysModel({data: data, participantsModel: participantsModel});
 

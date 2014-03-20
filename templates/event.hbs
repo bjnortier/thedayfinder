@@ -10,9 +10,6 @@
     .month .day {
       cursor: pointer;
     }
-    #months.disabled {
-      color: gray;
-    }
     #months.disabled .month .day {
       cursor: inherit;
     }
@@ -21,9 +18,7 @@
   <body>
     <div id="data" data-event-id="{{id}}"></div>
     <div id="error"></div>
-    <div>
-      <h2 id="name" contenteditable="true"></h2>
-      <p id="description" contenteditable="true"></p>
+    <div id="title-and-description">
     </div>
     <div id="participants">
       <div id="new-participant">I'm new:</div>
